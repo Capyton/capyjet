@@ -1,4 +1,5 @@
-import { Address, beginCell, Cell, contractAddress, toNano, Dictionary, DictionaryValue} from "../../node_modules/ton-core/dist/index"
+import { Address, beginCell, Cell, contractAddress, toNano, Dictionary, DictionaryValue} from "ton-core"
+import BN from 'bn.js'
 
 type NftJettonFixpriceSaleV1Data = {
     isComplete: boolean
@@ -37,7 +38,7 @@ const JettonPricesDictionaryValue: DictionaryValue< { fullPrice: string, marketp
 export function buildJettonPricesDict(jettons: Map<Address, { fullPrice: string, marketplaceFee: string, royaltyAmount: string }>) {
     const jettonsDict = Dictionary.empty(Dictionary.Keys.Int(256), JettonPricesDictionaryValue)
     jettons.forEach((value, key) => {
-        jettonsDict.set(key.hash, value)
+        jettonsDict.set(new BN(key.hash).toNumber(), value)
     })
     return jettonsDict;
   }
