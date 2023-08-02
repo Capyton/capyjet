@@ -7,6 +7,6 @@ export function useTonClient() {
     async () =>
       new TonClient({
         endpoint: await getHttpEndpoint({ network: 'testnet' }),
-      })
+      }),
   );
 }
