@@ -1,8 +1,8 @@
 import { useTonConnectUI } from '@tonconnect/ui-react';
-import { Sender, SenderArguments } from 'ton-core';
+import { SenderArguments } from 'ton-core';
 
-export function useTonConnect(): { sender: Sender; connected: boolean } {
-  const [{ sendTransaction, connected }] = useTonConnectUI();
+export function useTonConnect() {
+  const [{ sendTransaction, connected, wallet, account }] = useTonConnectUI();
 
   return {
     sender: {
@@ -19,6 +19,9 @@ export function useTonConnect(): { sender: Sender; connected: boolean } {
         });
       },
     },
+    sendTransaction,
     connected: connected,
+    wallet,
+    account,
   };
 }

@@ -6,11 +6,20 @@ import {
   toNano,
   Dictionary,
   DictionaryValue,
+  storeStateInit,
 } from 'ton-core';
 import BN from 'bn.js';
 import { TonClient } from 'ton';
 
-type NftJettonFixpriceSaleV1Data = {
+export type JettonPrice = {
+  fullPrice: string;
+  marketplaceFee: string;
+  royaltyAmount: string;
+};
+
+export type JettonPrices = Map<Address, JettonPrice>;
+
+export type NftJettonFixpriceSaleV1Data = {
   isComplete: boolean;
   createdAt: number;
   marketplaceAddress: Address;
@@ -22,24 +31,10 @@ type NftJettonFixpriceSaleV1Data = {
   royaltyAddress: Address;
   royaltyAmount: string;
   jettonsConfigured?: boolean;
-  jettonPrices: Map<
-    Address,
-    { fullPrice: string; marketplaceFee: string; royaltyAmount: string }
-  > | null;
+  jettonPrices: JettonPrices | null;
 };
 
-export async function getBodyToCancelSale(params: { queryId?: number }) {
-  const body = beginCell();
-  body.storeUint(3, 32);
-  body.storeUint(params.queryId ?? 0, 64);
-  return body;
-}
-
-const JettonPricesDictionaryValue: DictionaryValue<{
-  fullPrice: string;
-  marketplaceFee: string;
-  royaltyAmount: string;
-}> = {
+const JettonPrices: DictionaryValue<JettonPrice> = {
   serialize(
     src: { fullPrice: string; marketplaceFee: string; royaltyAmount: string },
     builder,
@@ -53,19 +48,20 @@ const JettonPricesDictionaryValue: DictionaryValue<{
   },
 };
 
-export function buildJettonPricesDict(
-  jettons: Map<
-    Address,
-    { fullPrice: string; marketplaceFee: string; royaltyAmount: string }
-  >,
-) {
-  const jettonsDict = Dictionary.empty(
-    Dictionary.Keys.Int(256),
-    JettonPricesDictionaryValue,
-  );
+export async function getBodyToCancelSale(params: { queryId?: number }) {
+  const body = beginCell();
+  body.storeUint(3, 32);
+  body.storeUint(params.queryId ?? 0, 64);
+  return body;
+}
+
+export function buildJettonPricesDict(jettons: JettonPrices) {
+  const jettonsDict = Dictionary.empty(Dictionary.Keys.Int(256), JettonPrices);
+
   jettons.forEach((value, key) => {
     jettonsDict.set(new BN(key.hash).toNumber(), value);
   });
+
   return jettonsDict;
 }
 
@@ -96,6 +92,7 @@ export async function getStateInitToCreateSale(
   dataCell.storeRef(feesCell);
 
   dataCell.storeBit(data.jettonsConfigured || false);
+
   if (data.jettonPrices && data.jettonPrices.size > 0) {
     dataCell.storeBit(1);
     dataCell.storeDict(buildJettonPricesDict(data.jettonPrices));
@@ -107,8 +104,12 @@ export async function getStateInitToCreateSale(
     data: dataCell.endCell(),
     code: NftJettonFixpriceSaleV1CodeCell,
   };
+
+  const stateInitCell = beginCell().store(storeStateInit(stateInit)).endCell();
+
   const address = contractAddress(0, stateInit);
-  return { stateInit, address };
+
+  return { stateInitCell, address };
 }
 
 export async function getUserJettonWallet(

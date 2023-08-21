@@ -17,6 +17,7 @@ export default defineConfig({
     alias: {
       components: path.resolve('src/components'),
       hooks: path.resolve('src/hooks'),
+      pages: path.resolve('src/pages'),
       types: path.resolve('src/types'),
       utils: path.resolve('src/utils'),
     },
