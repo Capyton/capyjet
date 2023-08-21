@@ -5,6 +5,6 @@ type Props = HTMLProps<HTMLInputElement>;
 
 export const TextField = (props: Props) => (
   <div css={styles.container}>
-    <input type="text" {...props} />
+    <input css={styles.input} type="text" {...props} />
   </div>
 );

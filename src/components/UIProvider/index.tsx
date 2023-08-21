@@ -8,6 +8,7 @@ const staticTheme: Omit<Theme, 'sizing'> = {
     primary: '#31a6f5',
     black: '#000000',
     white: '#ffffff',
+    gray: '#ebedf0',
   },
   font: "'Inter', sans-serif",
   unit: 4,
